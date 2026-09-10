@@ -1,666 +1,393 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>HandTrack Studio</title>
 
-    <title>Hand Tracking Camera</title>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            min-height: 100vh;
-            font-family: Arial, Helvetica, sans-serif;
-            background:
-                radial-gradient(circle at top, #1e293b, #020617 60%);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1000px;
-            background: rgba(15, 23, 42, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 24px;
-            padding: 25px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 8px;
-            font-size: 32px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: #94a3b8;
-            margin-bottom: 25px;
-        }
-
-        .camera-box {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            background: #000;
-            border-radius: 18px;
-            overflow: hidden;
-            border: 2px solid #334155;
-        }
-
-        video {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-
-            /* Mirror kamera */
-            transform: scaleX(-1);
-        }
-
-        canvas {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-
-            /* Mirror agar sesuai dengan video */
-            transform: scaleX(-1);
-        }
-
-        .status {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            z-index: 5;
-
-            padding: 9px 14px;
-            border-radius: 50px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(10px);
-
-            font-size: 14px;
-        }
-
-        .status-dot {
-            display: inline-block;
-            width: 9px;
-            height: 9px;
-            background: #ef4444;
-            border-radius: 50%;
-            margin-right: 7px;
-        }
-
-        .status-dot.active {
-            background: #22c55e;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        button {
-            border: none;
-            padding: 13px 22px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        #startBtn {
-            background: #2563eb;
-            color: white;
-        }
-
-        #startBtn:hover {
-            background: #1d4ed8;
-            transform: translateY(-2px);
-        }
-
-        #stopBtn {
-            background: #dc2626;
-            color: white;
-        }
-
-        #stopBtn:hover {
-            background: #b91c1c;
-            transform: translateY(-2px);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-
-        .info {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        .card {
-            background: rgba(30, 41, 59, 0.8);
-            border-radius: 15px;
-            padding: 18px;
-            text-align: center;
-        }
-
-        .card-title {
-            color: #94a3b8;
-            font-size: 13px;
-            margin-bottom: 7px;
-        }
-
-        .card-value {
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .instructions {
-            margin-top: 20px;
-            padding: 18px;
-            background: rgba(30, 41, 59, 0.6);
-            border-radius: 15px;
-            color: #cbd5e1;
-            line-height: 1.6;
-        }
-
-        .instructions strong {
-            color: white;
-        }
-
-        @media (max-width: 700px) {
-            h1 {
-                font-size: 25px;
-            }
-
-            .info {
-                grid-template-columns: 1fr;
-            }
-
-            .container {
-                padding: 15px;
-            }
-        }
-    </style>
+<!-- Semua CSS ada di file ini -->
+<style>
+:root{
+  --bg:#05070d;
+  --panel:rgba(13,18,31,.82);
+  --panel2:rgba(20,27,45,.72);
+  --line:rgba(255,255,255,.09);
+  --text:#f8fafc;
+  --muted:#8e9bb2;
+  --accent:#7c5cff;
+  --accent2:#00e5a8;
+  --danger:#ff4d67;
+  --shadow:0 30px 90px rgba(0,0,0,.48);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:
+radial-gradient(circle at 50% -10%,#22204d 0,#0c1020 28%,var(--bg) 65%);color:var(--text)}
+body{padding:22px}
+button,select{font:inherit}
+.app{max-width:1250px;margin:auto}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;font-size:25px;
+background:linear-gradient(135deg,var(--accent),#a98cff);box-shadow:0 10px 30px rgba(124,92,255,.3)}
+.brand h1{font-size:20px;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.badge{border:1px solid var(--line);background:rgba(255,255,255,.04);padding:9px 13px;border-radius:999px;color:#cdd6e7;font-size:12px}
+.badge i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#667085;margin-right:7px}
+.badge.live i{background:var(--accent2);box-shadow:0 0 12px var(--accent2)}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:25px;box-shadow:var(--shadow);backdrop-filter:blur(18px)}
+.viewer{padding:14px}
+.stage{position:relative;aspect-ratio:16/10;overflow:hidden;border-radius:19px;background:#020308;border:1px solid rgba(255,255,255,.07)}
+video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+video{transform:scaleX(-1)}
+canvas{transform:scaleX(-1);pointer-events:none}
+.grid{position:absolute;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(rgba(255,255,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.06) 1px,transparent 1px);background-size:48px 48px}
+.vtop{position:absolute;left:14px;right:14px;top:14px;display:flex;justify-content:space-between;z-index:4}
+.pill{padding:9px 12px;border-radius:12px;background:rgba(0,0,0,.48);border:1px solid rgba(255,255,255,.08);font-size:12px;backdrop-filter:blur(10px)}
+.center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;z-index:3;pointer-events:none}
+.start-card{max-width:330px;padding:24px;border-radius:22px;background:rgba(5,7,13,.74);border:1px solid rgba(255,255,255,.1);backdrop-filter:blur(15px)}
+.start-card .big{font-size:42px}.start-card h2{margin:8px 0 7px;font-size:21px}.start-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.5}
+.controls{display:flex;gap:10px;flex-wrap:wrap;padding:14px 2px 2px}
+.btn{border:0;border-radius:13px;padding:12px 16px;color:white;background:#20283b;border:1px solid var(--line);cursor:pointer;transition:.2s}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.12)}
+.btn.primary{background:linear-gradient(135deg,var(--accent),#5c45e9);box-shadow:0 10px 25px rgba(124,92,255,.22)}
+.btn.stop{background:rgba(255,77,103,.13);color:#ff8ea0;border-color:rgba(255,77,103,.25)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.side{padding:17px}
+.section-title{font-size:12px;color:#aeb9cc;text-transform:uppercase;letter-spacing:.12em;margin:2px 2px 12px}
+.stat{display:flex;justify-content:space-between;align-items:center;padding:13px 12px;border-radius:14px;background:rgba(255,255,255,.035);margin-bottom:8px;border:1px solid rgba(255,255,255,.045)}
+.stat span:first-child{color:var(--muted);font-size:12px}.stat strong{font-size:14px}
+.gesture{margin-top:15px;padding:18px;border-radius:18px;background:linear-gradient(145deg,rgba(124,92,255,.15),rgba(0,229,168,.05));border:1px solid rgba(124,92,255,.18)}
+.gesture .emoji{font-size:36px}.gesture small{display:block;color:var(--muted);margin-top:6px}.gesture h3{margin:5px 0 0;font-size:22px}
+.settings{margin-top:18px}.setting{margin-bottom:11px}.setting label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+select{width:100%;background:#11182a;color:white;border:1px solid var(--line);border-radius:11px;padding:10px;outline:none}
+.switch{display:flex;align-items:center;justify-content:space-between;padding:11px 0;color:#cbd5e1;font-size:12px}
+.switch input{appearance:none;width:40px;height:23px;background:#293247;border-radius:999px;position:relative;cursor:pointer;transition:.2s}
+.switch input:before{content:"";position:absolute;width:17px;height:17px;top:3px;left:3px;background:white;border-radius:50%;transition:.2s}
+.switch input:checked{background:var(--accent)}
+.switch input:checked:before{left:20px}
+.footer{color:#657188;text-align:center;font-size:11px;margin-top:18px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:12px}.side>*{margin-top:0}.settings{grid-column:1/-1}}
+@media(max-width:620px){body{padding:10px}.topbar{align-items:flex-start}.badge{display:none}.side{display:block}.stage{aspect-ratio:4/3}.controls .btn{flex:1}.brand h1{font-size:18px}}
+</style>
 </head>
 
 <body>
+<div class="app">
 
-<div class="container">
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">✋</div>
+      <div>
+        <h1>HandTrack Studio</h1>
+        <p>Real-time hand tracking • Browser edition</p>
+      </div>
+    </div>
+    <div id="statusBadge" class="badge"><i></i><span id="statusText">OFFLINE</span></div>
+  </header>
 
-    <h1>✋ Hand Tracking</h1>
+  <main class="layout">
 
-    <p class="subtitle">
-        Deteksi tangan secara real-time menggunakan kamera
-    </p>
-
-    <div class="camera-box">
-
-        <video id="video" autoplay playsinline></video>
-
+    <section class="panel viewer">
+      <div class="stage">
+        <video id="video" autoplay muted playsinline></video>
         <canvas id="canvas"></canvas>
+        <div class="grid"></div>
 
-        <div class="status">
-            <span id="statusDot" class="status-dot"></span>
-            <span id="statusText">Kamera belum aktif</span>
+        <div class="vtop">
+          <div class="pill">● CAMERA FEED</div>
+          <div class="pill"><span id="fps">0</span> FPS</div>
         </div>
 
-    </div>
-
-    <div class="controls">
-
-        <button id="startBtn">
-            📷 Mulai Kamera
-        </button>
-
-        <button id="stopBtn" disabled>
-            ⛔ Matikan Kamera
-        </button>
-
-    </div>
-
-    <div class="info">
-
-        <div class="card">
-            <div class="card-title">Tangan Terdeteksi</div>
-            <div id="handCount" class="card-value">0</div>
+        <div class="center" id="emptyState">
+          <div class="start-card">
+            <div class="big">📷</div>
+            <h2>Siap mendeteksi tangan</h2>
+            <p>Izinkan akses kamera lalu arahkan tangan ke kamera. Landmark akan muncul secara real-time.</p>
+          </div>
         </div>
+      </div>
 
-        <div class="card">
-            <div class="card-title">Jari Terbuka</div>
-            <div id="fingerCount" class="card-value">0</div>
+      <div class="controls">
+        <button id="startBtn" class="btn primary">▶ Mulai Kamera</button>
+        <button id="stopBtn" class="btn stop" disabled>■ Matikan</button>
+        <button id="flipBtn" class="btn">↔ Balik Kamera</button>
+      </div>
+    </section>
+
+    <aside class="panel side">
+      <div>
+        <div class="section-title">Live statistics</div>
+        <div class="stat"><span>Tangan</span><strong id="hands">0</strong></div>
+        <div class="stat"><span>Jari terbuka</span><strong id="fingers">0</strong></div>
+        <div class="stat"><span>Landmark</span><strong id="landmarks">0 / 21</strong></div>
+        <div class="stat"><span>Confidence</span><strong id="confidence">—</strong></div>
+      </div>
+
+      <div class="gesture">
+        <div class="emoji" id="gestureEmoji">🤚</div>
+        <small>GESTURE</small>
+        <h3 id="gestureName">Menunggu...</h3>
+      </div>
+
+      <div class="settings">
+        <div class="section-title">Pengaturan</div>
+        <div class="setting">
+          <label>Jumlah tangan</label>
+          <select id="maxHands">
+            <option value="1">1 tangan</option>
+            <option value="2" selected>2 tangan</option>
+          </select>
         </div>
+        <div class="switch"><span>Tampilkan grid</span><input id="gridToggle" type="checkbox" checked></div>
+        <div class="switch"><span>Tampilkan landmark</span><input id="landmarkToggle" type="checkbox" checked></div>
+      </div>
+    </aside>
+  </main>
 
-        <div class="card">
-            <div class="card-title">Status</div>
-            <div id="trackingStatus" class="card-value">OFF</div>
-        </div>
-
-    </div>
-
-    <div class="instructions">
-        <strong>Cara menggunakan:</strong><br>
-        1. Klik <strong>Mulai Kamera</strong>.<br>
-        2. Izinkan browser menggunakan kamera.<br>
-        3. Arahkan tangan ke kamera.<br>
-        4. Sistem akan mendeteksi titik-titik tangan secara otomatis.
-    </div>
-
+  <div class="footer">HandTrack Studio • HTML + CSS + JavaScript • MediaPipe Hands</div>
 </div>
 
-
-<!-- MediaPipe -->
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 
 <script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-    const video = document.getElementById("video");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const flipBtn = document.getElementById('flipBtn');
 
-    const startBtn = document.getElementById("startBtn");
-    const stopBtn = document.getElementById("stopBtn");
+const emptyState = document.getElementById('emptyState');
+const statusBadge = document.getElementById('statusBadge');
+const statusText = document.getElementById('statusText');
 
-    const statusText = document.getElementById("statusText");
-    const statusDot = document.getElementById("statusDot");
+const handsEl = document.getElementById('hands');
+const fingersEl = document.getElementById('fingers');
+const landmarksEl = document.getElementById('landmarks');
+const confidenceEl = document.getElementById('confidence');
+const gestureName = document.getElementById('gestureName');
+const gestureEmoji = document.getElementById('gestureEmoji');
+const fpsEl = document.getElementById('fps');
 
-    const handCount = document.getElementById("handCount");
-    const fingerCount = document.getElementById("fingerCount");
-    const trackingStatus = document.getElementById("trackingStatus");
+const grid = document.querySelector('.grid');
+const landmarkToggle = document.getElementById('landmarkToggle');
+const maxHandsSelect = document.getElementById('maxHands');
 
-    let stream = null;
-    let cameraRunning = false;
+let stream = null;
+let running = false;
+let mirrored = true;
+let lastTime = performance.now();
+let frames = 0;
+let fps = 0;
 
-    /*
-     * Membuat MediaPipe Hands
-     */
-    const hands = new Hands({
-        locateFile: (file) => {
-            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-        }
-    });
+const hands = new Hands({
+  locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+});
 
-    /*
-     * Pengaturan hand tracking
-     */
-    hands.setOptions({
+hands.setOptions({
+  maxNumHands: 2,
+  modelComplexity: 1,
+  minDetectionConfidence: .62,
+  minTrackingConfidence: .58
+});
 
-        maxNumHands: 2,
+function setStatus(on, text){
+  statusText.textContent = text;
+  statusBadge.classList.toggle('live', on);
+}
 
-        modelComplexity: 1,
+function countFingers(lm){
+  let count = 0;
 
-        minDetectionConfidence: 0.6,
+  // Thumb: dibuat cukup toleran untuk kamera depan.
+  const thumbOpen = Math.hypot(lm[4].x-lm[2].x, lm[4].y-lm[2].y) >
+                    Math.hypot(lm[3].x-lm[2].x, lm[3].y-lm[2].y) * 1.25;
+  if(thumbOpen) count++;
 
-        minTrackingConfidence: 0.6
+  [[8,6],[12,10],[16,14],[20,18]].forEach(([tip,pip])=>{
+    if(lm[tip].y < lm[pip].y - .015) count++;
+  });
+  return count;
+}
 
-    });
+function getGesture(n){
+  if(n === 0) return ['✊','Kepalan'];
+  if(n === 1) return ['☝️','Telunjuk'];
+  if(n === 2) return ['✌️','Peace'];
+  if(n === 3) return ['🤟','Tiga jari'];
+  if(n === 4) return ['🖐️','Empat jari'];
+  return ['🖐️','Telapak terbuka'];
+}
 
+hands.onResults(results=>{
+  if(!running) return;
 
-    /*
-     * Ketika hasil deteksi tersedia
-     */
-    hands.onResults((results) => {
+  canvas.width = video.videoWidth || 1280;
+  canvas.height = video.videoHeight || 720;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-        if (!cameraRunning) {
-            return;
-        }
+  const list = results.multiHandLandmarks || [];
+  handsEl.textContent = list.length;
 
-        /*
-         * Ukuran canvas mengikuti video
-         */
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
+  let totalFingers = 0;
+  let firstCount = 0;
 
-        ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
+  list.forEach((lm, index)=>{
+    const fingers = countFingers(lm);
+    totalFingers += fingers;
+    if(index === 0) firstCount = fingers;
 
-
-        const detectedHands =
-            results.multiHandLandmarks || [];
-
-
-        /*
-         * Jumlah tangan
-         */
-        handCount.textContent =
-            detectedHands.length;
-
-
-        if (detectedHands.length === 0) {
-
-            trackingStatus.textContent = "Mencari...";
-
-            fingerCount.textContent = "0";
-
-            return;
-        }
-
-
-        trackingStatus.textContent = "AKTIF";
-
-
-        /*
-         * Gambar landmark tangan
-         */
-        detectedHands.forEach((landmarks, index) => {
-
-            /*
-             * Gambar garis koneksi tangan
-             */
-            drawConnectors(
-                ctx,
-                landmarks,
-                HAND_CONNECTIONS,
-                {
-                    color: "#00ff88",
-                    lineWidth: 4
-                }
-            );
-
-
-            /*
-             * Gambar titik-titik tangan
-             */
-            drawLandmarks(
-                ctx,
-                landmarks,
-                {
-                    color: "#ffffff",
-                    fillColor: "#00ff88",
-                    lineWidth: 2,
-                    radius: 5
-                }
-            );
-
-        });
-
-
-        /*
-         * Hitung jari pada tangan pertama
-         */
-        if (detectedHands.length > 0) {
-
-            const fingers =
-                countOpenFingers(
-                    detectedHands[0]
-                );
-
-            fingerCount.textContent = fingers;
-        }
-
-    });
-
-
-    /*
-     * Menghitung jumlah jari yang terbuka
-     */
-    function countOpenFingers(landmarks) {
-
-        let count = 0;
-
-
-        /*
-         * Ibu jari
-         *
-         * Membandingkan posisi x
-         */
-        const thumbTip = landmarks[4];
-        const thumbIP = landmarks[3];
-
-
-        if (
-            Math.abs(thumbTip.x - thumbIP.x) > 0.04
-        ) {
-            count++;
-        }
-
-
-        /*
-         * Jari telunjuk
-         */
-        if (
-            landmarks[8].y <
-            landmarks[6].y
-        ) {
-            count++;
-        }
-
-
-        /*
-         * Jari tengah
-         */
-        if (
-            landmarks[12].y <
-            landmarks[10].y
-        ) {
-            count++;
-        }
-
-
-        /*
-         * Jari manis
-         */
-        if (
-            landmarks[16].y <
-            landmarks[14].y
-        ) {
-            count++;
-        }
-
-
-        /*
-         * Jari kelingking
-         */
-        if (
-            landmarks[20].y <
-            landmarks[18].y
-        ) {
-            count++;
-        }
-
-
-        return count;
+    if(landmarkToggle.checked){
+      drawConnectors(ctx,lm,HAND_CONNECTIONS,{color:'#7c5cff',lineWidth:5});
+      drawLandmarks(ctx,lm,{
+        color:'#ffffff',
+        fillColor:'#00e5a8',
+        lineWidth:2,
+        radius:5
+      });
     }
+  });
 
+  fingersEl.textContent = totalFingers;
+  landmarksEl.textContent = list.length ? `${list.length * 21} / 21` : '0 / 21';
 
-    /*
-     * Mulai kamera
-     */
-    startBtn.addEventListener("click", async () => {
+  if(results.multiHandedness?.length){
+    const score = results.multiHandedness[0].score || 0;
+    confidenceEl.textContent = Math.round(score * 100) + '%';
+  }else{
+    confidenceEl.textContent = '—';
+  }
 
-        try {
+  if(list.length){
+    const [emoji,name] = getGesture(firstCount);
+    gestureEmoji.textContent = emoji;
+    gestureName.textContent = name;
+  }else{
+    gestureEmoji.textContent = '🤚';
+    gestureName.textContent = 'Tidak ada tangan';
+  }
+});
 
-            statusText.textContent =
-                "Meminta izin kamera...";
+async function loop(){
+  if(!running) return;
 
+  if(video.readyState >= 2){
+    try { await hands.send({image: video}); }
+    catch(e){ console.error(e); }
+  }
 
-            /*
-             * Meminta akses kamera
-             */
-            stream =
-                await navigator.mediaDevices.getUserMedia({
+  frames++;
+  const now = performance.now();
+  if(now-lastTime >= 1000){
+    fps = frames;
+    frames = 0;
+    lastTime = now;
+    fpsEl.textContent = fps;
+  }
 
-                    video: {
-                        facingMode: "user",
+  requestAnimationFrame(loop);
+}
 
-                        width: {
-                            ideal: 1280
-                        },
+startBtn.onclick = async ()=>{
+  if(!navigator.mediaDevices?.getUserMedia){
+    alert('Browser ini tidak menyediakan akses kamera. Gunakan Chrome/Edge/Firefox melalui localhost atau HTTPS.');
+    return;
+  }
 
-                        height: {
-                            ideal: 720
-                        }
-                    },
-
-                    audio: false
-
-                });
-
-
-            video.srcObject = stream;
-
-            await video.play();
-
-
-            cameraRunning = true;
-
-
-            statusText.textContent =
-                "Kamera aktif";
-
-            statusDot.classList.add("active");
-
-            trackingStatus.textContent =
-                "Mencari...";
-
-
-            startBtn.disabled = true;
-            stopBtn.disabled = false;
-
-
-            /*
-             * Loop MediaPipe
-             */
-            processVideo();
-
-
-        } catch (error) {
-
-            console.error(error);
-
-            statusText.textContent =
-                "Kamera gagal dibuka";
-
-            statusDot.classList.remove("active");
-
-
-            alert(
-                "Tidak dapat mengakses kamera.\n\n" +
-                "Pastikan Anda sudah memberikan izin kamera " +
-                "kepada browser."
-            );
-
-        }
-
+  try{
+    setStatus(false,'MEMINTA IZIN...');
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode: mirrored ? 'user' : 'environment',
+        width:{ideal:1280},
+        height:{ideal:720}
+      },
+      audio:false
     });
 
+    video.srcObject = stream;
+    await video.play();
 
-    /*
-     * Proses frame kamera
-     */
-    async function processVideo() {
+    running = true;
+    emptyState.style.display = 'none';
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+    setStatus(true,'LIVE');
+    loop();
+  }catch(err){
+    console.error(err);
+    setStatus(false,'ERROR KAMERA');
+    alert('Kamera tidak bisa digunakan. Tekan Allow/Izinkan saat browser meminta akses kamera.');
+  }
+};
 
-        if (!cameraRunning) {
-            return;
-        }
+stopBtn.onclick = ()=>{
+  running = false;
 
+  if(stream){
+    stream.getTracks().forEach(track=>track.stop());
+    stream = null;
+  }
 
-        if (
-            video.readyState >= 2 &&
-            video.videoWidth > 0
-        ) {
+  video.srcObject = null;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
 
-            await hands.send({
-                image: video
-            });
+  startBtn.disabled = false;
+  stopBtn.disabled = true;
+  emptyState.style.display = 'grid';
 
-        }
+  handsEl.textContent = '0';
+  fingersEl.textContent = '0';
+  landmarksEl.textContent = '0 / 21';
+  confidenceEl.textContent = '—';
+  fpsEl.textContent = '0';
+  gestureName.textContent = 'Menunggu...';
+  gestureEmoji.textContent = '🤚';
 
+  setStatus(false,'OFFLINE');
+};
 
-        requestAnimationFrame(processVideo);
+flipBtn.onclick = async ()=>{
+  mirrored = !mirrored;
 
-    }
+  if(!running) return;
 
+  if(stream){
+    stream.getTracks().forEach(track=>track.stop());
+  }
 
-    /*
-     * Matikan kamera
-     */
-    stopBtn.addEventListener("click", () => {
-
-        cameraRunning = false;
-
-
-        if (stream) {
-
-            stream
-                .getTracks()
-                .forEach(track => track.stop());
-
-        }
-
-
-        video.srcObject = null;
-
-
-        ctx.clearRect(
-            0,
-            0,
-            canvas.width,
-            canvas.height
-        );
-
-
-        statusText.textContent =
-            "Kamera dimatikan";
-
-        statusDot.classList.remove("active");
-
-
-        handCount.textContent = "0";
-
-        fingerCount.textContent = "0";
-
-        trackingStatus.textContent = "OFF";
-
-
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode: mirrored ? 'user' : 'environment',
+        width:{ideal:1280},
+        height:{ideal:720}
+      },
+      audio:false
     });
+    video.srcObject = stream;
+    await video.play();
+  }catch(e){
+    console.error(e);
+  }
+};
 
+gridToggle.onchange = ()=> grid.style.display = gridToggle.checked ? 'block' : 'none';
 
-    /*
-     * Bersihkan kamera ketika halaman ditutup
-     */
-    window.addEventListener("beforeunload", () => {
+maxHandsSelect.onchange = ()=>{
+  hands.setOptions({
+    maxNumHands: Number(maxHandsSelect.value),
+    modelComplexity: 1,
+    minDetectionConfidence: .62,
+    minTrackingConfidence: .58
+  });
+};
 
-        if (stream) {
-
-            stream
-                .getTracks()
-                .forEach(track => track.stop());
-
-        }
-
-    });
-
+window.addEventListener('beforeunload',()=>{
+  if(stream) stream.getTracks().forEach(t=>t.stop());
+});
 </script>
-
 </body>
 </html>
