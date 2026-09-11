@@ -1,300 +1,75 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>HandTrack Vision — Gesture Lab</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HandTrack X — Unlimited Gesture Lab</title>
 <style>
-*{box-sizing:border-box}
-:root{
-  --bg:#05070b;--panel:rgba(10,13,19,.78);--line:rgba(255,255,255,.12);
-  --white:#f5f7fb;--muted:#98a1b3;--green:#00e89b;--yellow:#ffd83d;
-  --red:#ff5268;--cyan:#5ce1ff;--purple:#8768ff;
-}
-html,body{margin:0;width:100%;min-height:100%;background:#030507;color:var(--white);font-family:Inter,Segoe UI,Arial,sans-serif}
-body{overflow-x:hidden}
-.app{min-height:100vh;padding:18px;background:
-radial-gradient(circle at 50% -20%,rgba(95,72,255,.22),transparent 35%),
-radial-gradient(circle at 90% 80%,rgba(0,232,155,.08),transparent 28%)}
-.shell{width:min(1450px,100%);margin:auto}
-.top{height:62px;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.brand{display:flex;align-items:center;gap:12px}
-.brandIcon{width:43px;height:43px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#8065ff,#4c39b9);font-size:23px;box-shadow:0 10px 35px #6751ff33}
-.brand h1{font-size:18px;margin:0}.brand p{font-size:11px;color:var(--muted);margin:4px 0 0}
-.topRight{display:flex;align-items:center;gap:9px}
-.chip{font-size:11px;padding:9px 12px;border:1px solid var(--line);background:#ffffff08;border-radius:999px;color:#cbd3e1}
-.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#667085;margin-right:6px}
-.live .dot{background:var(--green);box-shadow:0 0 12px var(--green)}
-.main{display:grid;grid-template-columns:minmax(0,1fr) 315px;gap:14px}
-.viewer{position:relative;border:1px solid var(--line);border-radius:20px;background:#05070a;overflow:hidden;box-shadow:0 30px 90px #000a}
-.stage{position:relative;width:100%;aspect-ratio:16/9;min-height:440px;background:#020305;overflow:hidden}
-video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-video{transform:scaleX(-1)}
-canvas{transform:scaleX(-1);z-index:2}
-.vignette{position:absolute;inset:0;z-index:3;pointer-events:none;background:radial-gradient(circle,transparent 48%,rgba(0,0,0,.43) 100%)}
-.scan{position:absolute;left:0;right:0;top:-20%;height:2px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:.18;z-index:3;animation:scan 5s linear infinite}
-@keyframes scan{to{top:120%}}
-.hud{position:absolute;inset:0;z-index:4;pointer-events:none}
-.hudTop{position:absolute;left:16px;right:16px;top:15px;display:flex;justify-content:space-between;gap:10px}
-.hudBottom{position:absolute;left:16px;right:16px;bottom:15px;display:flex;justify-content:space-between;align-items:end}
-.hudBox{padding:9px 11px;border:1px solid rgba(255,255,255,.13);background:rgba(0,0,0,.42);backdrop-filter:blur(10px);border-radius:10px;font-size:10px;letter-spacing:.08em;color:#d9e0eb}
-.rec{color:#ff6578}.rec:before{content:"";display:inline-block;width:7px;height:7px;background:var(--red);border-radius:50%;margin-right:6px;box-shadow:0 0 10px var(--red)}
-.centerGesture{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;z-index:5;pointer-events:none}
-.gNumber{font-size:76px;line-height:1;font-weight:900;color:var(--yellow);text-shadow:0 0 25px #ffd83d88,0 3px 0 #6d5100;opacity:.9}
-.gLabel{margin-top:4px;font-size:11px;letter-spacing:.2em;color:white;background:#0008;padding:5px 9px;border-radius:6px}
-.empty{position:absolute;inset:0;display:grid;place-items:center;z-index:6}
-.emptyCard{width:min(380px,80%);padding:25px;border:1px solid var(--line);background:#070a10d9;border-radius:20px;text-align:center;backdrop-filter:blur(14px)}
-.emptyCard .icon{font-size:45px}.emptyCard h2{font-size:20px;margin:9px 0 6px}.emptyCard p{font-size:12px;color:var(--muted);line-height:1.55;margin:0}
-.controls{display:flex;gap:8px;flex-wrap:wrap;padding:11px;background:#080b10;border-top:1px solid var(--line)}
-button{border:1px solid var(--line);background:#121722;color:white;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700;font-size:12px}
-button:hover{filter:brightness(1.2);transform:translateY(-1px)}
-button.primary{background:linear-gradient(135deg,#755cff,#4f3ad0);border-color:#8976ff55}
-button.danger{color:#ff8292;background:#ff526812;border-color:#ff526833}
-button:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.side{border:1px solid var(--line);border-radius:20px;background:var(--panel);padding:16px;backdrop-filter:blur(20px)}
-.sideTitle{font-size:10px;letter-spacing:.18em;color:#8d97aa;margin:2px 0 10px;text-transform:uppercase}
-.bigCard{padding:16px;border-radius:15px;background:linear-gradient(145deg,#171329,#0c111b);border:1px solid #ffffff0d;margin-bottom:10px}
-.bigCard .emoji{font-size:35px}.bigCard small{color:var(--muted);font-size:10px}.bigCard h2{font-size:22px;margin:5px 0 0}
-.stat{display:flex;justify-content:space-between;padding:12px 10px;border-bottom:1px solid #ffffff08;font-size:12px}
-.stat span{color:var(--muted)}.stat strong{font-variant-numeric:tabular-nums}
-.section{margin-top:18px}
-.rangeRow{display:flex;align-items:center;gap:8px;margin:10px 0}.rangeRow label{font-size:11px;color:var(--muted);width:78px}
-input[type=range]{width:100%;accent-color:var(--purple)}
-.toggleRow{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#cbd3df;padding:9px 0}
-.switch{appearance:none;width:38px;height:21px;border-radius:20px;background:#2a3140;position:relative;padding:0;border:0}
-.switch:before{content:"";position:absolute;top:3px;left:3px;width:15px;height:15px;border-radius:50%;background:#fff;transition:.2s}
-.switch:checked{background:var(--purple)}.switch:checked:before{left:20px}
-.tip{margin-top:15px;padding:12px;border-radius:12px;background:#ffffff04;color:#8994a8;font-size:10px;line-height:1.55}
-.footer{text-align:center;color:#4f596b;font-size:10px;margin-top:11px}
-@media(max-width:980px){.main{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sideTitle,.section:first-of-type{grid-column:1/-1}.tip{grid-column:1/-1}.stage{min-height:0}}
-@media(max-width:650px){.app{padding:9px}.top{height:52px}.brand p{display:none}.topRight .chip:not(.liveChip){display:none}.main{gap:9px}.stage{aspect-ratio:4/3}.gNumber{font-size:58px}.side{display:block}.viewer{border-radius:15px}.side{border-radius:15px}}
+*{box-sizing:border-box}body{margin:0;background:#03050a;color:#f7f9fc;font-family:Inter,Segoe UI,Arial,sans-serif}
+body{background:radial-gradient(circle at 50% -15%,#29205a,transparent 35%),radial-gradient(circle at 100% 100%,#07332b,transparent 28%),#03050a}
+.app{width:min(1550px,100%);margin:auto;padding:16px}.top{height:60px;display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.brand{display:flex;gap:11px;align-items:center}.logo{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(135deg,#8a6cff,#4834c7);font-size:24px}
+h1{font-size:18px;margin:0;letter-spacing:.05em}.brand p{font-size:10px;color:#8792a6;margin:4px 0 0;letter-spacing:.1em}
+.chips{display:flex;gap:7px}.chip{font-size:10px;color:#cbd4e4;border:1px solid #fff1;background:#fff1;border-radius:999px;padding:8px 11px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#687386;margin-right:5px}.live .dot{background:#00f0a8;box-shadow:0 0 12px #00f0a8}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 335px;gap:12px}.card{border:1px solid #fff2;background:#0a0e17e8;border-radius:20px;box-shadow:0 30px 100px #000b;overflow:hidden}
+.stage{position:relative;aspect-ratio:16/9;background:#010204;overflow:hidden}video,canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}canvas{z-index:2}
+.hud{position:absolute;inset:0;z-index:5;pointer-events:none}.hudrow{position:absolute;left:14px;right:14px;display:flex;justify-content:space-between}.toprow{top:13px}.botrow{bottom:13px}.hudbox{font-size:10px;letter-spacing:.08em;padding:8px 10px;border-radius:9px;background:#0009;border:1px solid #fff2}.rec{color:#ff7385}.rec:before{content:"";display:inline-block;width:7px;height:7px;background:#ff4d69;border-radius:50%;margin-right:6px;box-shadow:0 0 10px #ff4d69}
+.scan{position:absolute;left:0;right:0;top:-5%;height:2px;background:linear-gradient(90deg,transparent,#00f0a8,transparent);opacity:.16;z-index:4;animation:scan 4s linear infinite}@keyframes scan{to{top:105%}}
+.corner{position:absolute;width:34px;height:34px;border-color:#fff8;z-index:4}.tl{top:20%;left:5%;border-left:2px solid;border-top:2px solid}.tr{top:20%;right:5%;border-right:2px solid;border-top:2px solid}.bl{bottom:20%;left:5%;border-left:2px solid;border-bottom:2px solid}.br{bottom:20%;right:5%;border-right:2px solid;border-bottom:2px solid}
+.empty{position:absolute;inset:0;display:grid;place-items:center;z-index:8}.emptybox{text-align:center;width:min(410px,82%);padding:25px;border:1px solid #fff2;background:#070a10e8;border-radius:20px}.emptybox .icon{font-size:46px}.emptybox h2{margin:8px 0 5px;font-size:21px}.emptybox p{margin:0;color:#8792a6;font-size:12px;line-height:1.55}
+.gcenter{position:absolute;z-index:7;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}.num{font-size:78px;font-weight:950;color:#ffd83d;text-shadow:0 0 25px #ffd83d66,0 3px #675300}.glabel{font-size:10px;letter-spacing:.2em;background:#000a;border-radius:6px;padding:5px 9px}
+.controls{padding:10px;display:flex;gap:7px;flex-wrap:wrap;background:#070a0f;border-top:1px solid #fff1}
+button{border:1px solid #fff2;background:#151b29;color:#fff;border-radius:10px;padding:10px 13px;font-size:11px;font-weight:800;cursor:pointer}button:hover{filter:brightness(1.2)}button:disabled{opacity:.4;cursor:not-allowed}.primary{background:linear-gradient(135deg,#795cff,#4e39ce)}.danger{color:#ff8292;background:#ff4d6910;border-color:#ff4d6933}
+.side{padding:15px;max-height:calc(100vh - 88px);overflow:auto}.title{font-size:9px;letter-spacing:.18em;color:#8e99ac;margin:2px 0 9px;text-transform:uppercase}.hero{padding:15px;border-radius:15px;background:linear-gradient(145deg,#18142e,#0b111b);border:1px solid #fff1;margin-bottom:10px}.hero .emoji{font-size:35px}.hero small{font-size:9px;color:#8792a6}.hero h2{font-size:21px;margin:4px 0 0}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:6px}.stat{padding:10px;border-radius:11px;background:#fff1;border:1px solid #fff1}.stat span{display:block;color:#8792a6;font-size:9px}.stat b{display:block;font-size:16px;margin-top:4px}.section{margin-top:17px}.row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;color:#cbd4e2;font-size:11px;border-bottom:1px solid #fff1}
+input[type=range]{width:120px;accent-color:#795cff}input[type=number]{width:58px;background:#101624;color:#fff;border:1px solid #fff2;border-radius:7px;padding:6px}
+.toggle{appearance:none;width:38px;height:21px;border:0;border-radius:99px;background:#2a3140;position:relative;padding:0}.toggle:before{content:"";position:absolute;width:15px;height:15px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}.toggle:checked{background:#795cff}.toggle:checked:before{left:20px}
+.list{display:flex;flex-direction:column;gap:6px}.hand{padding:9px 10px;border-radius:11px;background:#fff1;border:1px solid #fff1;display:flex;justify-content:space-between;font-size:10px}.hand span{color:#8792a6}.tip{margin-top:14px;padding:11px;border-radius:11px;background:#fff1;color:#7f899a;font-size:9px;line-height:1.55}
+@media(max-width:1000px){.layout{grid-template-columns:1fr}.side{max-height:none;display:grid;grid-template-columns:1fr 1fr;gap:12px}.section{margin-top:0}.full{grid-column:1/-1}}@media(max-width:650px){.app{padding:8px}.brand p{display:none}.chips .chip:first-child{display:none}.stage{aspect-ratio:4/3}.side{display:block}.side .section{margin-top:16px}.num{font-size:55px}}
 </style>
 </head>
 <body>
 <div class="app">
-<div class="shell">
-<header class="top">
-  <div class="brand">
-    <div class="brandIcon">✋</div>
-    <div><h1>HANDTRACK VISION</h1><p>REAL-TIME GESTURE LAB • WEB EDITION</p></div>
-  </div>
-  <div class="topRight">
-    <div class="chip">MediaPipe Hands</div>
-    <div id="liveChip" class="chip liveChip"><span class="dot"></span><span id="liveText">OFFLINE</span></div>
-  </div>
-</header>
-
-<div class="main">
-<section class="viewer">
-  <div class="stage">
-    <video id="video" autoplay muted playsinline></video>
-    <canvas id="canvas"></canvas>
-    <div class="vignette"></div><div class="scan"></div>
-
-    <div class="hud">
-      <div class="hudTop">
-        <div class="hudBox rec">REC <span id="clock">00:00</span></div>
-        <div class="hudBox"><span id="fps">0</span> FPS • <span id="res">—</span></div>
-      </div>
-      <div class="hudBottom">
-        <div class="hudBox">TRACKING: <span id="tracking">WAITING</span></div>
-        <div class="hudBox">HANDS <span id="hands">0</span> • POINTS <span id="points">0</span></div>
-      </div>
-    </div>
-
-    <div id="centerGesture" class="centerGesture" style="display:none">
-      <div id="gNumber" class="gNumber">0</div>
-      <div id="gLabel" class="gLabel">GESTURE</div>
-    </div>
-
-    <div id="empty" class="empty">
-      <div class="emptyCard">
-        <div class="icon">📷</div>
-        <h2>Camera ready</h2>
-        <p>Tekan <b>START CAMERA</b>, izinkan kamera, lalu masukkan tangan ke frame. Titik tangan, garis koneksi, jarak antar tangan, dan gesture akan dianalisis otomatis.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="controls">
-    <button id="start" class="primary">▶ START CAMERA</button>
-    <button id="stop" class="danger" disabled>■ STOP</button>
-    <button id="flip">↔ FLIP CAMERA</button>
-    <button id="clear">⌫ CLEAR OVERLAY</button>
-  </div>
-</section>
-
-<aside class="side">
-  <div class="section">
-    <div class="sideTitle">Gesture recognition</div>
-    <div class="bigCard">
-      <div class="emoji" id="gestureEmoji">🤚</div>
-      <small>CURRENT GESTURE</small>
-      <h2 id="gesture">Waiting...</h2>
-    </div>
-    <div class="stat"><span>Open fingers</span><strong id="fingers">0</strong></div>
-    <div class="stat"><span>Hands detected</span><strong id="hands2">0</strong></div>
-    <div class="stat"><span>Confidence</span><strong id="confidence">—</strong></div>
-    <div class="stat"><span>Index distance</span><strong id="distance">—</strong></div>
-  </div>
-
-  <div class="section">
-    <div class="sideTitle">Overlay controls</div>
-    <div class="toggleRow"><span>Landmarks</span><input id="landmarksToggle" class="switch" type="checkbox" checked></div>
-    <div class="toggleRow"><span>Connections</span><input id="connectionsToggle" class="switch" type="checkbox" checked></div>
-    <div class="toggleRow"><span>Tracking box</span><input id="boxToggle" class="switch" type="checkbox" checked></div>
-    <div class="toggleRow"><span>Gesture number</span><input id="numberToggle" class="switch" type="checkbox" checked></div>
-  </div>
-
-  <div class="section">
-    <div class="sideTitle">Detection</div>
-    <div class="rangeRow"><label>Confidence</label><input id="confidenceRange" type="range" min="40" max="90" value="60"><b id="confidenceValue">60%</b></div>
-    <div class="rangeRow"><label>Max hands</label><input id="maxHands" type="range" min="1" max="2" value="2"><b id="maxHandsValue">2</b></div>
-  </div>
-
-  <div class="tip">💡 Tips: gunakan pencahayaan cukup, posisikan tangan penuh di kamera, dan hindari background terlalu gelap. Untuk akses kamera, buka melalui <b>localhost</b> atau <b>HTTPS</b>.</div>
-</aside>
+<header class="top"><div class="brand"><div class="logo">✋</div><div><h1>HANDTRACK X</h1><p>UNLIMITED GESTURE • REAL-TIME VISION LAB</p></div></div><div class="chips"><div class="chip">MEDIAPIPE</div><div id="live" class="chip"><span class="dot"></span><span id="liveText">OFFLINE</span></div></div></header>
+<div class="layout">
+<section class="card"><div class="stage">
+<video id="video" autoplay muted playsinline></video><canvas id="canvas"></canvas><div class="scan"></div>
+<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+<div class="hud"><div class="hudrow toprow"><div class="hudbox rec">REC <span id="timer">00:00</span></div><div class="hudbox"><span id="fps">0</span> FPS • <span id="res">—</span></div></div><div class="hudrow botrow"><div class="hudbox">SYSTEM: <span id="system">STANDBY</span></div><div class="hudbox">HANDS <span id="hands">0</span> • LANDMARKS <span id="points">0</span></div></div></div>
+<div id="gcenter" class="gcenter" style="display:none"><div id="num" class="num">0</div><div id="glabel" class="glabel">OPEN FINGERS</div></div>
+<div id="empty" class="empty"><div class="emptybox"><div class="icon">🖐️</div><h2>UNLIMITED HAND TRACKING</h2><p>Atur jumlah tangan sendiri. Setiap tangan punya 21 landmark dan 5 jari yang dihitung secara otomatis.</p></div></div>
 </div>
-<div class="footer">HTML • CSS • JavaScript • MediaPipe Hands — tanpa Python</div>
-</div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<div class="controls"><button id="start" class="primary">▶ START CAMERA</button><button id="stop" class="danger" disabled>■ STOP</button><button id="flip">↔ FLIP</button><button id="clear">⌫ CLEAR</button><button id="full">⛶ FULLSCREEN</button></div></section>
+<aside class="card side">
+<div class="section full"><div class="title">Live recognition</div><div class="hero"><div class="emoji" id="heroEmoji">🤚</div><small>CURRENT GESTURE</small><h2 id="gesture">Waiting...</h2></div><div class="stats"><div class="stat"><span>Total hands</span><b id="hands2">0</b></div><div class="stat"><span>Total fingers</span><b id="fingers">0</b></div><div class="stat"><span>Landmarks</span><b id="landmarks">0</b></div><div class="stat"><span>Confidence</span><b id="confidence">—</b></div></div></div>
+<div class="section"><div class="title">Unlimited detector</div><div class="row"><span>Maximum hands</span><input id="maxHands" type="number" min="1" max="10" value="4"></div><div class="row"><span>Confidence</span><span><input id="conf" type="range" min="30" max="90" value="55"> <b id="confVal">55%</b></span></div></div>
+<div class="section"><div class="title">Overlay</div><div class="row"><span>21 landmarks</span><input id="lm" class="toggle" type="checkbox" checked></div><div class="row"><span>Connections</span><input id="conn" class="toggle" type="checkbox" checked></div><div class="row"><span>Hand boxes</span><input id="box" class="toggle" type="checkbox" checked></div><div class="row"><span>Finger tips</span><input id="tips" class="toggle" type="checkbox" checked></div><div class="row"><span>Center counter</span><input id="counter" class="toggle" type="checkbox" checked></div></div>
+<div class="section full"><div class="title">Per-hand analysis</div><div id="list" class="list"><div class="hand"><span>HAND 1</span><b>waiting</b></div></div></div>
+<div class="tip full">⚡ UI mendukung konfigurasi sampai 10 tangan. Jumlah yang benar-benar dapat dideteksi tetap mengikuti kemampuan model, kamera, pencahayaan, dan performa perangkat. Total jari = jumlah tangan terdeteksi × hasil jari terbuka tiap tangan.</div>
+</aside></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script><script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
 <script>
-const $=id=>document.getElementById(id);
-const video=$('video'),canvas=$('canvas'),ctx=canvas.getContext('2d');
-
-let stream=null,running=false,mirror=true,startAt=0,raf=0,lastSecond=performance.now(),frames=0;
-let conf=.60,maxHands=2;
-
-const hands=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-function configure(){hands.setOptions({maxNumHands:maxHands,modelComplexity:1,minDetectionConfidence:conf,minTrackingConfidence:conf});}
-configure();
-
-function distance(a,b){
-  const dx=(a.x-b.x),dy=(a.y-b.y);
-  return Math.sqrt(dx*dx+dy*dy);
-}
-function countFingers(lm){
-  let n=0;
-  // Thumb
-  if(distance(lm[4],lm[0])>distance(lm[3],lm[0])*1.10)n++;
-  [[8,6],[12,10],[16,14],[20,18]].forEach(([t,p])=>{if(lm[t].y<lm[p].y-.012)n++});
-  return n;
-}
-function gesture(f){
-  if(f<=0)return ['✊','FIST'];
-  if(f===1)return ['☝️','POINT'];
-  if(f===2)return ['✌️','PEACE'];
-  if(f===3)return ['🤟','THREE'];
-  if(f===4)return ['🖐️','FOUR'];
-  return ['🖐️','OPEN PALM'];
-}
-function boxFor(lm){
-  let xs=lm.map(p=>p.x),ys=lm.map(p=>p.y);
-  return {minX:Math.min(...xs),maxX:Math.max(...xs),minY:Math.min(...ys),maxY:Math.max(...ys)};
-}
-function px(p){return {x:p.x*canvas.width,y:p.y*canvas.height}}
-
-hands.onResults(r=>{
-  if(!running)return;
-  canvas.width=video.videoWidth||1280; canvas.height=video.videoHeight||720;
-  $('res').textContent=`${canvas.width}×${canvas.height}`;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  const all=r.multiHandLandmarks||[];
-  $('hands').textContent=all.length;$('hands2').textContent=all.length;$('points').textContent=all.length*21;
-  $('tracking').textContent=all.length?'ACTIVE':'SEARCHING';
-
-  let total=0;
-  all.forEach((lm,i)=>{
-    const f=countFingers(lm);total+=f;
-    const b=boxFor(lm);
-
-    if($('boxToggle').checked){
-      const x=b.minX*canvas.width-10,y=b.minY*canvas.height-10;
-      const w=(b.maxX-b.minX)*canvas.width+20,h=(b.maxY-b.minY)*canvas.height+20;
-      ctx.strokeStyle='#ffd83d';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.strokeRect(x,y,w,h);ctx.setLineDash([]);
-    }
-
-    if($('connectionsToggle').checked)
-      drawConnectors(ctx,lm,HAND_CONNECTIONS,{color:'#00e89b',lineWidth:4});
-
-    if($('landmarksToggle').checked)
-      drawLandmarks(ctx,lm,{color:'#fff',fillColor:'#8768ff',lineWidth:2,radius:5});
-
-    // Highlight index fingertip
-    const tip=px(lm[8]);
-    ctx.beginPath();ctx.arc(tip.x,tip.y,9,0,Math.PI*2);
-    ctx.strokeStyle='#ffd83d';ctx.lineWidth=3;ctx.stroke();
-
-    if(i===0){
-      const [em,name]=gesture(f);
-      $('gestureEmoji').textContent=em;$('gesture').textContent=name;
-      $('fingers').textContent=total;
-      $('gNumber').textContent=f;
-      $('gLabel').textContent=name;
-      $('confidence').textContent=r.multiHandedness?.[0]?.score ? Math.round(r.multiHandedness[0].score*100)+'%' : '—';
-    }
-  });
-
-  // Connect the index fingertips of two hands like the reference demo.
-  if(all.length>=2){
-    const a=px(all[0][8]),b=px(all[1][8]);
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
-    ctx.strokeStyle='#ffd83d';ctx.lineWidth=3;ctx.setLineDash([10,6]);ctx.stroke();ctx.setLineDash([]);
-    ctx.beginPath();ctx.arc(a.x,a.y,12,0,Math.PI*2);ctx.arc(b.x,b.y,12,0,Math.PI*2);
-    ctx.strokeStyle='#ffd83d';ctx.lineWidth=3;ctx.stroke();
-    const d=distance(all[0][8],all[1][8])*100;
-    $('distance').textContent=d.toFixed(1)+'%';
-  }else $('distance').textContent='—';
-
-  $('centerGesture').style.display=$('numberToggle').checked&&all.length?'block':'none';
-});
-
-async function loop(){
-  if(!running)return;
-  if(video.readyState>=2)try{await hands.send({image:video})}catch(e){console.error(e)}
-  frames++;const now=performance.now();
-  if(now-lastSecond>=1000){$('fps').textContent=frames;frames=0;lastSecond=now}
-  if(startAt){const s=Math.floor((Date.now()-startAt)/1000);$('clock').textContent=`${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
-  raf=requestAnimationFrame(loop);
-}
-
-$('start').onclick=async()=>{
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({
-      video:{facingMode:mirror?'user':'environment',width:{ideal:1280},height:{ideal:720}},audio:false
-    });
-    video.srcObject=stream;await video.play();running=true;startAt=Date.now();
-    $('empty').style.display='none';$('start').disabled=true;$('stop').disabled=false;
-    $('liveChip').classList.add('live');$('liveText').textContent='LIVE';loop();
-  }catch(e){
-    alert('Kamera gagal dibuka. Pastikan browser mengizinkan kamera dan halaman dibuka lewat localhost/HTTPS.');
-    console.error(e);
-  }
-};
-$('stop').onclick=()=>{
-  running=false;cancelAnimationFrame(raf);
-  if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;video.srcObject=null;
-  ctx.clearRect(0,0,canvas.width,canvas.height);$('empty').style.display='grid';
-  $('start').disabled=false;$('stop').disabled=true;$('liveChip').classList.remove('live');$('liveText').textContent='OFFLINE';
-  $('tracking').textContent='WAITING';$('hands').textContent='0';$('hands2').textContent='0';$('points').textContent='0';
-  $('fingers').textContent='0';$('confidence').textContent='—';$('distance').textContent='—';$('gesture').textContent='Waiting...';$('gestureEmoji').textContent='🤚';$('centerGesture').style.display='none';
-};
-$('flip').onclick=async()=>{
-  mirror=!mirror;if(!running)return;
-  if(stream)stream.getTracks().forEach(t=>t.stop());
-  try{
-    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:mirror?'user':'environment',width:{ideal:1280},height:{ideal:720}},audio:false});
-    video.srcObject=stream;await video.play();
-  }catch(e){console.error(e)}
-};
-$('clear').onclick=()=>ctx.clearRect(0,0,canvas.width,canvas.height);
-$('confidenceRange').oninput=e=>{conf=e.target.value/100;$('confidenceValue').textContent=e.target.value+'%';configure()};
-$('maxHands').oninput=e=>{maxHands=+e.target.value;$('maxHandsValue').textContent=maxHands;configure()};
-window.addEventListener('beforeunload',()=>{if(stream)stream.getTracks().forEach(t=>t.stop())});
+const $=id=>document.getElementById(id),v=$('video'),c=$('canvas'),x=c.getContext('2d');let stream=null,running=false,mirror=true,maxHands=4,conf=.55,raf,start=0,frames=0,last=performance.now();
+const H=new Hands({locateFile:f=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
+function opt(){H.setOptions({maxNumHands:maxHands,modelComplexity:1,minDetectionConfidence:conf,minTrackingConfidence:conf})}opt();
+function fingers(l){let n=0;if(Math.hypot(l[4].x-l[0].x,l[4].y-l[0].y)>Math.hypot(l[3].x-l[0].x,l[3].y-l[0].y)*1.08)n++;[[8,6],[12,10],[16,14],[20,18]].forEach(([a,b])=>{if(l[a].y<l[b].y-.01)n++});return n}
+function gest(n){return n==0?['✊','FIST']:n==1?['☝️','ONE FINGER']:n==2?['✌️','PEACE']:n==3?['🤟','THREE FINGERS']:n==4?['🖐️','FOUR FINGERS']:['🖐️','OPEN PALM']}
+function box(l){let X=l.map(p=>p.x),Y=l.map(p=>p.y);return[Math.min(...X),Math.max(...X),Math.min(...Y),Math.max(...Y)]}
+H.onResults(r=>{if(!running)return;c.width=v.videoWidth||1280;c.height=v.videoHeight||720;$('res').textContent=c.width+'×'+c.height;x.clearRect(0,0,c.width,c.height);let L=r.multiHandLandmarks||[],total=0,rows='';
+$('hands').textContent=L.length;$('hands2').textContent=L.length;$('points').textContent=L.length*21;$('landmarks').textContent=L.length*21;$('system').textContent=L.length?'TRACKING':'SEARCHING';
+L.forEach((l,i)=>{let f=fingers(l);total+=f;rows+=`<div class="hand"><span>HAND ${i+1}</span><b>${f}/5 fingers</b></div>`;let [a,b,d,e]=box(l);
+if($('box').checked){x.strokeStyle='#ffd83d';x.lineWidth=2;x.setLineDash([7,5]);x.strokeRect(a*c.width-10,d*c.height-10,(b-a)*c.width+20,(e-d)*c.height+20);x.setLineDash([])}
+if($('conn').checked)drawConnectors(x,l,HAND_CONNECTIONS,{color:'#00f0a8',lineWidth:4});
+if($('lm').checked)drawLandmarks(x,l,{color:'#fff',fillColor:'#795cff',lineWidth:2,radius:5});
+if($('tips').checked)[4,8,12,16,20].forEach(k=>{x.beginPath();x.arc(l[k].x*c.width,l[k].y*c.height,8,0,Math.PI*2);x.strokeStyle='#ffd83d';x.lineWidth=2;x.stroke()})});
+$('list').innerHTML=rows||'<div class="hand"><span>NO HAND</span><b>waiting</b></div>';$('fingers').textContent=total;
+if(L.length){let [em,n]=gest(fingers(L[0]));$('heroEmoji').textContent=em;$('gesture').textContent=n;$('num').textContent=total;$('glabel').textContent=L.length+' HAND'+(L.length>1?'S':'')+' • '+total+' FINGERS';$('gcenter').style.display=$('counter').checked?'block':'none';let s=r.multiHandedness?.[0]?.score;$('confidence').textContent=s?Math.round(s*100)+'%':'—'}else{$('gesture').textContent='No hand detected';$('heroEmoji').textContent='🤚';$('gcenter').style.display='none';$('confidence').textContent='—'}
+if(L.length>1){x.beginPath();L.forEach((l,i)=>{let p=l[8];let X=p.x*c.width,Y=p.y*c.height;i?x.lineTo(X,Y):x.moveTo(X,Y)});x.strokeStyle='#ffd83d';x.lineWidth=2;x.setLineDash([9,6]);x.stroke();x.setLineDash([])}});
+async function loop(){if(!running)return;if(v.readyState>=2)try{await H.send({image:v})}catch(e){}frames++;let n=performance.now();if(n-last>1000){$('fps').textContent=frames;frames=0;last=n}if(start){let s=Math.floor((Date.now()-start)/1000);$('timer').textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}raf=requestAnimationFrame(loop)}
+$('start').onclick=async()=>{try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:mirror?'user':'environment',width:{ideal:1280},height:{ideal:720}},audio:false});v.srcObject=stream;await v.play();running=true;start=Date.now();$('empty').style.display='none';$('start').disabled=true;$('stop').disabled=false;$('live').classList.add('live');$('liveText').textContent='LIVE';loop()}catch(e){alert('Kamera gagal. Gunakan Chrome/Edge melalui localhost atau HTTPS dan pilih Allow.')}};
+$('stop').onclick=()=>{running=false;cancelAnimationFrame(raf);if(stream)stream.getTracks().forEach(t=>t.stop());stream=null;v.srcObject=null;x.clearRect(0,0,c.width,c.height);$('empty').style.display='grid';$('start').disabled=false;$('stop').disabled=true;$('live').classList.remove('live');$('liveText').textContent='OFFLINE';$('system').textContent='STANDBY';$('hands').textContent='0';$('hands2').textContent='0';$('points').textContent='0';$('landmarks').textContent='0';$('fingers').textContent='0';$('confidence').textContent='—';$('gesture').textContent='Waiting...';$('heroEmoji').textContent='🤚';$('gcenter').style.display='none'};
+$('flip').onclick=async()=>{mirror=!mirror;if(!running)return;if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:mirror?'user':'environment',width:{ideal:1280},height:{ideal:720}},audio:false});v.srcObject=stream;await v.play()};
+$('clear').onclick=()=>x.clearRect(0,0,c.width,c.height);$('full').onclick=()=>document.querySelector('.viewer')?.requestFullscreen?.();
+$('maxHands').onchange=e=>{maxHands=Math.max(1,Math.min(10,+e.target.value||1));e.target.value=maxHands;opt()};$('conf').oninput=e=>{conf=e.target.value/100;$('confVal').textContent=e.target.value+'%';opt()};
 </script>
-</body>
-</html>
+</body></html>
